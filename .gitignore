@@ -6,6 +6,8 @@
 
 # Planning documents (not needed in repo)
 /docs/
+/ARCHITECTURE.md
+/TASKS.md
 
 # Claude configuration
 /.claude/
