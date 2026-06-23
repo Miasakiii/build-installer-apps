@@ -1,0 +1,29 @@
+[package]
+name = "packforge"
+description = "PackForge CLI — 安装包提取器 & 安装程序生成器"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "packforge"
+path = "src/main.rs"
+
+[dependencies]
+packforge-core     = { workspace = true }
+packforge-scanner  = { workspace = true }
+packforge-analyzer = { workspace = true }
+packforge-packager = { workspace = true }
+clap               = { workspace = true }
+indicatif          = { workspace = true }
+colored            = { workspace = true }
+serde_json         = { workspace = true }
+csv                = { workspace = true }
+tracing            = { workspace = true }
+tracing-subscriber = { workspace = true }
+anyhow             = { workspace = true }
+camino             = { workspace = true }
+
+[dev-dependencies]
+assert_cmd      = { workspace = true }
+predicates      = { workspace = true }

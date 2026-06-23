@@ -1,0 +1,13 @@
+[package]
+name = "packforge-core"
+description = "PackForge 核心数据模型与抽象"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde      = { workspace = true }
+serde_json = { workspace = true }
+chrono     = { workspace = true }
+thiserror  = { workspace = true }
+camino     = { workspace = true }

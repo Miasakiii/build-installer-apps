@@ -1,0 +1,78 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/packforge-core",
+    "crates/packforge-scanner",
+    "crates/packforge-analyzer",
+    "crates/packforge-packager",
+    "crates/packforge-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/packforge/packforge"
+description = "安装包提取器 & 安装程序生成器"
+
+[workspace.dependencies]
+# 内部 crate
+packforge-core     = { path = "crates/packforge-core" }
+packforge-scanner  = { path = "crates/packforge-scanner" }
+packforge-analyzer = { path = "crates/packforge-analyzer" }
+packforge-packager = { path = "crates/packforge-packager" }
+
+# 序列化
+serde        = { version = "1", features = ["derive"] }
+serde_json   = "1"
+csv          = "1"
+
+# CLI
+clap         = { version = "4", features = ["derive", "color", "unicode"] }
+indicatif    = "0.17"
+colored      = "2"
+
+# Windows API
+windows      = "0.61"
+windows-registry = "0.5"
+
+# PE 解析
+goblin       = "0.9"
+
+# 文件系统
+walkdir      = "2"
+directories  = "6"
+
+# 哈希
+sha2         = "0.10"
+
+# 并行
+rayon        = "1"
+
+# 压缩
+zip          = "2"
+
+# 日期时间
+chrono       = { version = "0.4", features = ["serde"] }
+
+# 错误处理
+thiserror    = "2"
+anyhow       = "1"
+
+# 日志
+tracing      = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# 路径处理
+camino       = { version = "1", features = ["serde1"] }
+
+# 测试
+tempfile     = "3"
+assert_cmd   = "2"
+predicates   = "3"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+strip = "symbols"

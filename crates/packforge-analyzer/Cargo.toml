@@ -1,0 +1,21 @@
+[package]
+name = "packforge-analyzer"
+description = "PackForge 智能分析引擎（依赖检测、用户数据剥离、可移植性评估）"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+packforge-core     = { workspace = true }
+packforge-scanner  = { workspace = true }
+serde              = { workspace = true }
+serde_json      = { workspace = true }
+goblin          = { workspace = true }
+walkdir         = { workspace = true }
+tracing         = { workspace = true }
+thiserror       = { workspace = true }
+anyhow          = { workspace = true }
+camino          = { workspace = true }
+
+[dev-dependencies]
+tempfile        = { workspace = true }

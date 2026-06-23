@@ -1,0 +1,27 @@
+[package]
+name = "packforge-scanner"
+description = "PackForge 文件系统 & 注册表扫描引擎"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+packforge-core  = { workspace = true }
+serde           = { workspace = true }
+serde_json      = { workspace = true }
+sha2            = { workspace = true }
+goblin          = { workspace = true }
+walkdir         = { workspace = true }
+rayon           = { workspace = true }
+tracing         = { workspace = true }
+thiserror       = { workspace = true }
+anyhow          = { workspace = true }
+camino          = { workspace = true }
+chrono          = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+windows         = { workspace = true }
+windows-registry = { workspace = true }
+
+[dev-dependencies]
+tempfile        = { workspace = true }

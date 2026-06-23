@@ -1,0 +1,21 @@
+[package]
+name = "packforge-packager"
+description = "PackForge 打包输出引擎（Inno Setup / 便携化 ZIP）"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+packforge-core     = { workspace = true }
+packforge-scanner  = { workspace = true }
+packforge-analyzer = { workspace = true }
+serde              = { workspace = true }
+serde_json      = { workspace = true }
+zip             = { workspace = true }
+tracing         = { workspace = true }
+thiserror       = { workspace = true }
+anyhow          = { workspace = true }
+camino          = { workspace = true }
+
+[dev-dependencies]
+tempfile        = { workspace = true }
