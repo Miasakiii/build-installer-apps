@@ -103,15 +103,15 @@ fn generate_files_section(manifest: &PackageManifest) -> String {
             PackageEntry::File { source, dest, .. } => {
                 section.push_str(&format!(
                     "Source: \"{}\"; DestDir: \"{}\"; Flags: ignoreversion\n",
-                    source.as_str().replace('\\', "/"),
+                    escape_inno_path(source.as_str()),
                     extract_dir(dest)
                 ));
             }
             PackageEntry::Directory { source, dest } => {
                 section.push_str(&format!(
                     "Source: \"{}\\*\"; DestDir: \"{}\"; Flags: recursesubdirs ignoreversion\n",
-                    source.as_str().replace('\\', "/"),
-                    dest.as_str().replace('\\', "/")
+                    escape_inno_path(source.as_str()),
+                    escape_inno_path(dest.as_str())
                 ));
             }
         }
@@ -132,14 +132,14 @@ fn generate_icons_section(manifest: &PackageManifest) -> String {
             if shortcut_str.contains("Start Menu") {
                 section.push_str(&format!(
                     "Name: \"{{group}}\\{}\"; Filename: \"{}\"\n",
-                    app_name,
-                    target.as_str().replace('\\', "/")
+                    escape_inno_value(app_name),
+                    escape_inno_path(target.as_str())
                 ));
             } else if shortcut_str.contains("Desktop") {
                 section.push_str(&format!(
                     "Name: \"{{autodesktop}}\\{}\"; Filename: \"{}\"\n",
-                    app_name,
-                    target.as_str().replace('\\', "/")
+                    escape_inno_value(app_name),
+                    escape_inno_path(target.as_str())
                 ));
             }
         }
@@ -153,11 +153,12 @@ fn generate_icons_section(manifest: &PackageManifest) -> String {
     {
         section.push_str(&format!(
             "Name: \"{{group}}\\{}\"; Filename: \"{{app}}\\{}.exe\"\n",
-            app_name, app_name
+            escape_inno_value(app_name),
+            escape_inno_value(app_name)
         ));
         section.push_str(&format!(
             "Name: \"{{group}}\\卸载 {}\"; Filename: \"{{uninstallexe}}\"\n",
-            app_name
+            escape_inno_value(app_name)
         ));
     }
 
@@ -195,10 +196,10 @@ fn generate_registry_section(manifest: &PackageManifest) -> String {
         section.push_str(&format!(
             "Root: {}; Subkey: \"{}\"; ValueType: {}; ValueName: \"{}\"; ValueData: \"{}\"\n",
             root,
-            entry.key_path.replace('\\', "/"),
+            escape_inno_path(&entry.key_path),
             value_type,
-            value_name,
-            entry.value_data.replace('"', "\"\"")
+            escape_inno_value(value_name),
+            escape_inno_value(&entry.value_data)
         ));
     }
 
@@ -216,13 +217,14 @@ fn generate_run_section(manifest: &PackageManifest) -> String {
                 let args_str = args.join(" ");
                 section.push_str(&format!(
                     "Filename: \"{}\"; Parameters: \"{}\"; Flags: postinstall nowait\n",
-                    command, args_str
+                    escape_inno_path(command),
+                    escape_inno_value(&args_str)
                 ));
             }
             InstallAction::RegisterCom { dll_path } => {
                 section.push_str(&format!(
                     "Filename: \"regsvr32\"; Parameters: \"/s \\\"{}\\\"\"; Flags: runhidden\n",
-                    dll_path.as_str().replace('\\', "/")
+                    escape_inno_path(dll_path.as_str())
                 ));
             }
             _ => {}
@@ -232,7 +234,8 @@ fn generate_run_section(manifest: &PackageManifest) -> String {
     // 默认：安装后启动程序
     section.push_str(&format!(
         "Filename: \"{{app}}\\{}.exe\"; Description: \"启动 {}\"; Flags: postinstall nowait\n",
-        manifest.name, manifest.name
+        escape_inno_value(&manifest.name),
+        escape_inno_value(&manifest.name)
     ));
 
     section
@@ -247,14 +250,15 @@ fn generate_uninstall_run_section(manifest: &PackageManifest) -> String {
             UninstallAction::UnregisterCom { dll_path } => {
                 section.push_str(&format!(
                     "Filename: \"regsvr32\"; Parameters: \"/s /u \\\"{}\\\"\"; Flags: runhidden\n",
-                    dll_path.as_str().replace('\\', "/")
+                    escape_inno_path(dll_path.as_str())
                 ));
             }
             UninstallAction::RunCommand { command, args } => {
                 let args_str = args.join(" ");
                 section.push_str(&format!(
                     "Filename: \"{}\"; Parameters: \"{}\"; Flags: runhidden\n",
-                    command, args_str
+                    escape_inno_path(command),
+                    escape_inno_value(&args_str)
                 ));
             }
             _ => {}
@@ -273,19 +277,19 @@ fn generate_uninstall_delete_section(manifest: &PackageManifest) -> String {
             UninstallAction::RemoveDirectory(path) => {
                 section.push_str(&format!(
                     "Type: filesandordirs; Name: \"{}\"\n",
-                    path.as_str().replace('\\', "/")
+                    escape_inno_path(path.as_str())
                 ));
             }
             UninstallAction::RemoveFile(path) => {
                 section.push_str(&format!(
                     "Type: files; Name: \"{}\"\n",
-                    path.as_str().replace('\\', "/")
+                    escape_inno_path(path.as_str())
                 ));
             }
             UninstallAction::RemoveShortcut(path) => {
                 section.push_str(&format!(
                     "Type: files; Name: \"{}\"\n",
-                    path.as_str().replace('\\', "/")
+                    escape_inno_path(path.as_str())
                 ));
             }
             _ => {}
@@ -293,6 +297,29 @@ fn generate_uninstall_delete_section(manifest: &PackageManifest) -> String {
     }
 
     section
+}
+
+/// 转义 Inno Setup 路径中的特殊字符
+///
+/// 安全说明：防止路径中的特殊字符导致脚本注入。
+/// 将反斜杠转换为正斜杠，并转义双引号。
+fn escape_inno_path(path: &str) -> String {
+    path.replace('\\', "/")
+        .replace('"', "\"\"")
+        .replace('\'', "''")
+}
+
+/// 转义 Inno Setup 值中的特殊字符
+///
+/// 安全说明：防止值中的特殊字符导致脚本注入。
+/// Inno Setup 使用双引号包围值，内部的双引号需要转义。
+fn escape_inno_value(value: &str) -> String {
+    value
+        .replace('"', "\"\"")  // 双引号转义
+        .replace('\\', "\\\\")  // 反斜杠转义
+        .replace('\n', "\\n")   // 换行符转义
+        .replace('\r', "\\r")   // 回车符转义
+        .replace('\t', "\\t")   // 制表符转义
 }
 
 /// 从路径中提取目录部分

@@ -296,10 +296,30 @@ fn scan_program_files() -> Result<HashMap<String, Utf8PathBuf>> {
 }
 
 /// 扫描环境变量
+///
+/// 安全说明：过滤掉可能包含敏感信息的环境变量，
+/// 如密码、密钥、令牌等。
 fn scan_environment() -> HashMap<String, String> {
+    // 敏感环境变量名称模式（不区分大小写）
+    let sensitive_patterns = [
+        "password", "passwd", "pwd", "secret", "token", "key",
+        "auth", "credential", "api_key", "apikey", "access_key",
+        "private", "signing", "encryption", "decrypt",
+    ];
+
     let mut env = HashMap::new();
     for (key, value) in std::env::vars() {
-        env.insert(key, value);
+        let key_lower = key.to_lowercase();
+
+        // 检查是否是敏感变量
+        let is_sensitive = sensitive_patterns.iter().any(|pattern| {
+            key_lower.contains(pattern)
+        });
+
+        // 如果不是敏感变量，则包含在快照中
+        if !is_sensitive {
+            env.insert(key, value);
+        }
     }
     env
 }
