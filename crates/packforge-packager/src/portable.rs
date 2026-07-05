@@ -155,21 +155,31 @@ pub fn create_portable_package(
 }
 
 /// 计算相对于安装目录的路径
+///
+/// 安全说明：使用路径组件级别的比较而非字符串前缀匹配，
+/// 防止路径遍历攻击（例如 install_dir="C:\App" 匹配到 "C:\Application\file.exe"）。
 fn compute_relative_path(install_dir: &Utf8PathBuf, file_path: &Utf8PathBuf) -> String {
-    let install_str = install_dir.as_str().trim_end_matches('\\').trim_end_matches('/');
-    let file_str = file_path.as_str();
+    let install_path = std::path::Path::new(install_dir.as_str());
+    let file_path_std = std::path::Path::new(file_path.as_str());
 
-    if let Some(relative) = file_str.strip_prefix(install_str) {
-        relative
-            .trim_start_matches('\\')
-            .trim_start_matches('/')
-            .to_string()
-    } else {
-        // 如果不在安装目录下，只保留文件名
-        file_path
-            .file_name()
-            .unwrap_or("unknown")
-            .to_string()
+    // 使用路径组件级别的比较，确保路径前缀匹配是安全的
+    // 例如：install_dir="C:\App" 不应该匹配 "C:\Application\file.exe"
+    match file_path_std.strip_prefix(install_path) {
+        Ok(relative) => {
+            let relative_str = relative.to_string_lossy().to_string();
+            // 确保相对路径不以路径分隔符开头
+            relative_str
+                .trim_start_matches('\\')
+                .trim_start_matches('/')
+                .to_string()
+        }
+        Err(_) => {
+            // 如果不在安装目录下，只保留文件名（防止路径遍历）
+            file_path
+                .file_name()
+                .unwrap_or("unknown")
+                .to_string()
+        }
     }
 }
 
