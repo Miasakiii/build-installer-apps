@@ -50,7 +50,7 @@ sha2         = "0.10"
 rayon        = "1"
 
 # 压缩
-zip          = "2"
+zip          = "9"
 
 # 日期时间
 chrono       = { version = "0.4", features = ["serde"] }
